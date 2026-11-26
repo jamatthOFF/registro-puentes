@@ -1,192 +1,750 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Puentes - Clase</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Puentes | Tarea de Clase</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons para iconos modernos y limpios -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Animaciones suaves */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .card-enter {
+            animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
-  <div class="max-w-2xl mx-auto">
-    <header class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-amber-400">🌉 Registro de Puentes</h1>
-      <p class="text-slate-400 text-sm mt-1">Aparta tu puente antes de ir a tomarte la foto. No se pueden repetir.</p>
-      <div id="statusBadge" class="inline-block mt-3 px-3 py-1 rounded-full text-xs bg-slate-800 text-slate-400">
-        Conectando a la base de datos...
-      </div>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar / Encabezado Principal -->
+    <header class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner">
+                    <i class="ph-bold ph-bridge text-2xl sm:text-3xl text-emerald-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight leading-tight">
+                        Registro de Puentes
+                    </h1>
+                    <p id="connection-status" class="text-indigo-100 text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                        <span id="status-dot" class="w-2 h-2 rounded-full bg-amber-300 animate-pulse"></span>
+                        <span id="status-text">Conectando en vivo...</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contador en vivo -->
+            <div class="flex items-center gap-3 bg-indigo-950/40 px-4 py-2 rounded-2xl border border-white/15 backdrop-blur-md">
+                <div class="text-right">
+                    <span class="block text-[11px] uppercase tracking-wider text-indigo-200 font-semibold">Puentes Apartados</span>
+                    <span id="total-count" class="text-xl sm:text-2xl font-black text-emerald-300 leading-none">0</span>
+                </div>
+                <div class="h-8 w-[1px] bg-white/20"></div>
+                <i class="ph-duotone ph-check-circle text-2xl text-emerald-400"></i>
+            </div>
+        </div>
     </header>
 
-    <!-- Formulario -->
-    <form id="bridgeForm" class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg space-y-4 mb-6">
-      <div>
-        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Tu Nombre y Apellido</label>
-        <input type="text" id="studentName" required placeholder="Ej. Carlos Mendoza"
-          class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 focus:border-amber-400 focus:outline-none">
-      </div>
-      <div>
-        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Nombre del Puente</label>
-        <input type="text" id="bridgeName" required placeholder="Ej. Puente Rojo / Puente El Cambio"
-          class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 focus:border-amber-400 focus:outline-none">
-      </div>
-      <div>
-        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Ubicación / Referencia</label>
-        <input type="text" id="bridgeLocation" required placeholder="Ej. Vía a Pasaje, frente al parque..."
-          class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 focus:border-amber-400 focus:outline-none">
-      </div>
+    <!-- Contenido Principal -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 sm:px-6 sm:py-8">
+        
+        <!-- Banner informativo rápido -->
+        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6 flex items-start gap-3 shadow-sm">
+            <i class="ph-fill ph-info text-indigo-600 text-xl mt-0.5 shrink-0"></i>
+            <div class="text-sm text-indigo-900">
+                <p class="font-semibold">¿Cómo funciona?</p>
+                <p class="text-indigo-700/90 mt-0.5">
+                    Antes de ir a tomarte la foto, registra aquí tu puente. Si otro compañero ya lo apartó (incluso si lo escribió diferente), el sistema bloqueará el registro para evitar repetidos.
+                </p>
+            </div>
+        </div>
 
-      <div id="alertBox" class="hidden p-3 rounded-lg text-sm font-medium"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+            
+            <!-- COLUMNA IZQUIERDA: Formulario de Registro -->
+            <section class="lg:col-span-5 bg-white rounded-3xl shadow-md border border-slate-200/80 p-5 sm:p-6 lg:sticky lg:top-24">
+                <div class="flex items-center gap-2.5 mb-5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                        <i class="ph-bold ph-plus text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Apartar mi Puente</h2>
+                        <p class="text-xs text-slate-500">Completa los datos para asegurar tu lugar</p>
+                    </div>
+                </div>
 
-      <button type="submit" id="submitBtn"
-        class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition">
-        Apartar Puente
-      </button>
-    </form>
+                <!-- Alerta de Error (Oculta por defecto) -->
+                <div id="error-alert" class="hidden mb-5 bg-rose-50 border-2 border-rose-500 rounded-2xl p-4 text-rose-900 shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <div class="bg-rose-500 text-white p-1.5 rounded-lg shrink-0 mt-0.5">
+                            <i class="ph-bold ph-warning-octagon text-lg"></i>
+                        </div>
+                        <div class="text-sm">
+                            <h3 class="font-extrabold text-rose-700 text-base">¡Puente ya ocupado!</h3>
+                            <p id="error-message" class="mt-1 text-rose-800 font-medium leading-snug"></p>
+                            <p class="mt-2 text-xs text-rose-600 font-semibold">Por favor, elige otro puente diferente.</p>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Buscador y Lista -->
-    <div class="mb-4 flex items-center justify-between gap-2">
-      <input type="text" id="searchInput" placeholder="🔍 Buscar puente o compañero..."
-        class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:border-amber-400 focus:outline-none">
-      <span id="counter" class="text-xs font-semibold bg-slate-800 px-3 py-2.5 rounded-lg border border-slate-700 whitespace-nowrap">
-        0 apartados
-      </span>
+                <!-- Alerta de Éxito (Oculta por defecto) -->
+                <div id="success-alert" class="hidden mb-5 bg-emerald-50 border border-emerald-300 rounded-2xl p-3.5 text-emerald-900 flex items-center gap-3">
+                    <i class="ph-fill ph-check-circle text-emerald-600 text-2xl shrink-0"></i>
+                    <div class="text-sm">
+                        <p class="font-bold text-emerald-800">¡Puente apartado con éxito!</p>
+                        <p class="text-xs text-emerald-700">Ya aparece en la lista para toda la clase.</p>
+                    </div>
+                </div>
+
+                <form id="register-form" class="space-y-4">
+                    <!-- Campo: Nombre del Estudiante -->
+                    <div>
+                        <label for="student-name" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Tu Nombre (o Grupo) <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="ph ph-user text-slate-400 text-lg absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                            <input 
+                                type="text" 
+                                id="student-name" 
+                                required
+                                placeholder="Ej. Camila Mendoza"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Campo: Nombre del Puente -->
+                    <div>
+                        <label for="bridge-name" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Nombre del Puente / Lugar <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="ph ph-bridge text-slate-400 text-lg absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                            <input 
+                                type="text" 
+                                id="bridge-name" 
+                                required
+                                placeholder="Ej. Puente El Pindo / Puente Rojo"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                            >
+                        </div>
+                        <!-- Indicador de verificación instantánea mientras escribe -->
+                        <p id="live-check-hint" class="text-[11px] mt-1.5 text-slate-400 flex items-center gap-1">
+                            <i class="ph ph-shield-check"></i> Verificación automática anti-duplicados activa
+                        </p>
+                    </div>
+
+                    <!-- Campo: Ubicación / Referencia -->
+                    <div>
+                        <label for="bridge-location" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Ubicación / Sector / Maps <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="ph ph-map-pin text-slate-400 text-lg absolute left-3.5 top-3.5"></i>
+                            <textarea 
+                                id="bridge-location" 
+                                rows="2"
+                                required
+                                placeholder="Ej. Vía a Pasaje km 4, o pega el link de Google Maps"
+                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none"
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Botón Enviar -->
+                    <button 
+                        type="submit" 
+                        id="submit-btn"
+                        disabled
+                        class="w-full py-3.5 px-5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                    >
+                        <i class="ph-bold ph-lock-key text-lg"></i>
+                        <span id="submit-btn-text">Conectando...</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- COLUMNA DERECHA: Lista en Vivo y Buscador -->
+            <section class="lg:col-span-7 space-y-4">
+                
+                <!-- Barra de Búsqueda Rápida -->
+                <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col sm:flex-row gap-3 items-center">
+                    <div class="relative w-full">
+                        <i class="ph-bold ph-magnifying-glass text-indigo-500 text-lg absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                        <input 
+                            type="text" 
+                            id="search-input" 
+                            placeholder="Buscar puente, sector o compañero para ver si ya está ocupado..."
+                            class="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        >
+                        <button id="clear-search" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i class="ph-bold ph-x-circle text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Encabezado de Lista -->
+                <div class="flex items-center justify-between px-1">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-duotone ph-list-checks text-indigo-600 text-xl"></i>
+                        Puentes ya registrados
+                    </h2>
+                    <span id="filter-status" class="text-xs font-medium text-slate-500">Mostrando todos</span>
+                </div>
+
+                <!-- Estado de Carga -->
+                <div id="loading-state" class="bg-white rounded-3xl p-10 text-center border border-slate-200/80 shadow-sm">
+                    <div class="inline-block w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                    <p class="text-sm font-medium text-slate-600">Sincronizando lista con la clase...</p>
+                </div>
+
+                <!-- Estado Vacío (Cuando no hay puentes aún o no hay coincidencias) -->
+                <div id="empty-state" class="hidden bg-white rounded-3xl p-10 text-center border border-dashed border-slate-300">
+                    <div class="w-14 h-14 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <i class="ph-duotone ph-bridge text-3xl"></i>
+                    </div>
+                    <h3 id="empty-title" class="text-base font-bold text-slate-700">Aún no hay puentes registrados</h3>
+                    <p id="empty-subtitle" class="text-xs sm:text-sm text-slate-500 mt-1 max-w-xs mx-auto">
+                        ¡Sé el primero en apartar tu puente usando el formulario!
+                    </p>
+                </div>
+
+                <!-- Contenedor de Tarjetas -->
+                <div id="bridges-list" class="space-y-3">
+                    <!-- Las tarjetas se inyectan dinámicamente aquí -->
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal Personalizado de Confirmación para Eliminar -->
+    <div id="delete-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 card-enter">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
+                <i class="ph-bold ph-trash text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-800">¿Eliminar este registro?</h3>
+            <p class="text-sm text-slate-600 mt-1.5">
+                Vas a liberar el puente <span id="modal-bridge-name" class="font-bold text-slate-800"></span>. Otro compañero podrá apartarlo inmediatamente.
+            </p>
+            <div class="mt-6 flex items-center gap-3">
+                <button id="cancel-delete-btn" class="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors">
+                    Cancelar
+                </button>
+                <button id="confirm-delete-btn" class="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-sm shadow-md shadow-rose-600/20 transition-colors">
+                    Sí, liberar
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div id="bridgeList" class="space-y-3"></div>
-  </div>
+    <!-- Pie de página -->
+    <footer class="mt-auto py-5 text-center text-xs text-slate-400 border-t border-slate-200/60 bg-white">
+        <p>Sistema de Control de Puentes • Sincronizado en tiempo real</p>
+    </footer>
 
-  <script>
-    const DB_URL = "https://registro-puentes-default-rtdb.firebaseio.com";
+    <!-- Lógica de Conexión a Firebase Realtime Database y Aplicación -->
+    <script>
+        // URL de tu base de datos en Firebase Realtime Database
+        const DB_URL = "https://registro-puentes-default-rtdb.firebaseio.com";
+        const COLLECTION_PATH = `${DB_URL}/puentes_clase.json`;
 
-    let records = [];
-    const form = document.getElementById('bridgeForm');
-    const alertBox = document.getElementById('alertBox');
-    const bridgeList = document.getElementById('bridgeList');
-    const searchInput = document.getElementById('searchInput');
-    const counter = document.getElementById('counter');
-    const statusBadge = document.getElementById('statusBadge');
-    const submitBtn = document.getElementById('submitBtn');
+        // Generar o recuperar ID único de este dispositivo/navegador para identificar tus propios registros
+        function getDeviceUserId() {
+            let uid = localStorage.getItem('puentes_device_uid');
+            if (!uid) {
+                uid = 'user_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+                localStorage.setItem('puentes_device_uid', uid);
+            }
+            return uid;
+        }
 
-    function normalize(text) {
-      return text
-        .toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/\b(puente|el|la|los|las|de|del)\b/g, "")
-        .replace(/[^a-z0-9]/g, "")
-        .trim();
-    }
+        const currentUserId = getDeviceUserId();
+        let allBridges = [];
+        let bridgeIdToDelete = null;
+        let isFirstLoad = true;
 
-    function showAlert(msg, isError = true) {
-      alertBox.textContent = msg;
-      alertBox.className = `p-3 rounded-lg text-sm font-medium ${
-        isError ? 'bg-red-950/80 border border-red-500 text-red-200' : 'bg-emerald-950/80 border border-emerald-500 text-emerald-200'
-      }`;
-      alertBox.classList.remove('hidden');
-    }
+        // Referencias al DOM
+        const form = document.getElementById('register-form');
+        const studentInput = document.getElementById('student-name');
+        const bridgeInput = document.getElementById('bridge-name');
+        const locationInput = document.getElementById('bridge-location');
+        const submitBtn = document.getElementById('submit-btn');
+        const submitBtnText = document.getElementById('submit-btn-text');
+        
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
 
-    async function fetchBridges() {
-      try {
-        const res = await fetch(`${DB_URL}/puentes.json`);
-        if (!res.ok) throw new Error("Error de conexión");
-        const data = await res.json();
-        records = data ? Object.entries(data).map(([id, val]) => ({ id, ...val })) : [];
-        records.sort((a, b) => b.createdAt - a.createdAt);
-        statusBadge.textContent = "🟢 Sincronizado en vivo";
-        statusBadge.className = "inline-block mt-3 px-3 py-1 rounded-full text-xs bg-emerald-950 text-emerald-300 border border-emerald-800";
-        renderList();
-      } catch (err) {
-        statusBadge.textContent = "🔴 Error al conectar con la base de datos";
-        statusBadge.className = "inline-block mt-3 px-3 py-1 rounded-full text-xs bg-red-950 text-red-300";
-      }
-    }
+        const errorAlert = document.getElementById('error-alert');
+        const errorMessage = document.getElementById('error-message');
+        const successAlert = document.getElementById('success-alert');
+        const liveCheckHint = document.getElementById('live-check-hint');
 
-    function renderList() {
-      const q = searchInput.value.toLowerCase();
-      const filtered = records.filter(r =>
-        r.bridge.toLowerCase().includes(q) ||
-        r.student.toLowerCase().includes(q) ||
-        r.location.toLowerCase().includes(q)
-      );
+        const bridgesListEl = document.getElementById('bridges-list');
+        const loadingStateEl = document.getElementById('loading-state');
+        const emptyStateEl = document.getElementById('empty-state');
+        const emptyTitleEl = document.getElementById('empty-title');
+        const emptySubtitleEl = document.getElementById('empty-subtitle');
+        const totalCountEl = document.getElementById('total-count');
+        
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search');
+        const filterStatusEl = document.getElementById('filter-status');
 
-      counter.textContent = `${records.length} apartado${records.length === 1 ? '' : 's'}`;
+        const deleteModal = document.getElementById('delete-modal');
+        const modalBridgeName = document.getElementById('modal-bridge-name');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-      if (filtered.length === 0) {
-        bridgeList.innerHTML = `<p class="text-center text-slate-500 py-8 text-sm">Aún no hay puentes registrados. ¡Sé el primero!</p>`;
-        return;
-      }
+        /**
+         * Normaliza el texto del puente para detectar duplicados o nombres muy similares.
+         */
+        function normalizeBridgeName(text) {
+            if (!text) return '';
+            let normalized = text
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
 
-      bridgeList.innerHTML = filtered.map(item => `
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex justify-between items-start gap-3">
-          <div>
-            <h3 class="font-bold text-amber-300 text-lg">${escapeHtml(item.bridge)}</h3>
-            <p class="text-sm text-slate-300">📍 ${escapeHtml(item.location)}</p>
-            <p class="text-xs text-slate-400 mt-1">👤 Apartado por: <span class="text-slate-200 font-medium">${escapeHtml(item.student)}</span></p>
-          </div>
-          <button onclick="deleteBridge('${item.id}', '${escapeHtml(item.student)}')"
-            class="text-xs text-slate-400 hover:text-red-400 px-2 py-1 rounded border border-slate-700 hover:border-red-500/50 transition">
-            Borrar
-          </button>
-        </div>
-      `).join('');
-    }
+            normalized = normalized.replace(/[^a-z0-9\s]/g, ' ');
 
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, m => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' }[m]));
-    }
+            const stopWords = ['puente', 'puentes', 'el', 'la', 'los', 'las', 'de', 'del', 'en', 'un', 'una', 'rio', 'esteros', 'estero', 'paso', 'peatonal', 'vehicular'];
+            const words = normalized
+                .split(/\s+/)
+                .filter(word => word.length > 0 && !stopWords.includes(word));
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      alertBox.classList.add('hidden');
+            if (words.length === 0) {
+                return normalized.replace(/\s+/g, ' ').trim();
+            }
 
-      const student = document.getElementById('studentName').value.trim();
-      const bridge = document.getElementById('bridgeName').value.trim();
-      const location = document.getElementById('bridgeLocation').value.trim();
+            return words.join(' ');
+        }
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Verificando disponibilidad...";
+        /**
+         * Calcula similitud básica (Distancia de Levenshtein) para atrapar errores de tipeo leves
+         */
+        function getEditDistance(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
 
-      await fetchBridges();
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
 
-      const normNew = normalize(bridge);
-      const duplicate = records.find(r => {
-        const normExisting = normalize(r.bridge);
-        return normExisting === normNew || (normNew.length > 3 && (normExisting.includes(normNew) || normNew.includes(normExisting)));
-      });
+        /**
+         * Verifica si un nombre de puente entra en conflicto con alguno ya registrado.
+         */
+        function findDuplicateBridge(inputName) {
+            const cleanInput = normalizeBridgeName(inputName);
+            if (!cleanInput) return null;
 
-      if (duplicate) {
-        showAlert(`❌ Error: El puente "${duplicate.bridge}" ya fue apartado por ${duplicate.student}. Elige otro puente.`);
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Apartar Puente";
-        return;
-      }
+            for (const item of allBridges) {
+                const cleanExisting = item.normalizedName || normalizeBridgeName(item.bridgeName);
+                
+                if (cleanInput === cleanExisting) {
+                    return item;
+                }
 
-      try {
-        const res = await fetch(`${DB_URL}/puentes.json`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ student, bridge, location, createdAt: Date.now() })
+                if (cleanInput.length >= 4 && cleanExisting.length >= 4) {
+                    if (cleanInput.includes(cleanExisting) || cleanExisting.includes(cleanInput)) {
+                        return item;
+                    }
+                }
+
+                if (cleanInput.length >= 5 && cleanExisting.length >= 5) {
+                    const dist = getEditDistance(cleanInput, cleanExisting);
+                    if (dist <= 1) {
+                        return item;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Formatea fecha/hora de manera amigable
+         */
+        function formatTime(timestamp) {
+            if (!timestamp) return 'Hace un momento';
+            const date = new Date(timestamp);
+            return new Intl.DateTimeFormat('es-EC', {
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        }
+
+        /**
+         * Detecta si la ubicación es un enlace URL para hacerlo cliqueable
+         */
+        function formatLocationHTML(locationText) {
+            const escaped = escapeHTML(locationText);
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            if (urlRegex.test(escaped)) {
+                return escaped.replace(urlRegex, (url) => {
+                    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 underline font-semibold break-all">
+                        Ver mapa <i class="ph-bold ph-arrow-square-out"></i>
+                    </a>`;
+                });
+            }
+            return escaped;
+        }
+
+        /**
+         * Escapa caracteres HTML para evitar XSS
+         */
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /**
+         * Obtiene los datos actualizados desde Firebase Realtime Database
+         */
+        async function syncBridges() {
+            try {
+                const response = await fetch(COLLECTION_PATH);
+                if (!response.ok) throw new Error('Error de red con Firebase');
+                
+                const data = await response.json();
+                const docs = [];
+
+                if (data) {
+                    for (const [id, val] of Object.entries(data)) {
+                        docs.push({
+                            id,
+                            ...val
+                        });
+                    }
+                }
+
+                // Ordenar: los más recientes primero
+                docs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                allBridges = docs;
+
+                // Actualizar estado conectado
+                statusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                statusText.textContent = "Control en vivo • ¡No se vale repetir!";
+
+                if (isFirstLoad) {
+                    submitBtn.disabled = false;
+                    submitBtnText.textContent = 'Apartar este Puente';
+                    isFirstLoad = false;
+                }
+
+                renderBridges();
+                updateLiveHint();
+            } catch (err) {
+                console.error("Error sincronizando:", err);
+                statusDot.className = "w-2 h-2 rounded-full bg-rose-400";
+                statusText.textContent = "Reconectando con la base de datos...";
+                if (isFirstLoad) {
+                    loadingStateEl.innerHTML = `<p class="text-sm text-rose-600 font-semibold">No se pudo conectar con la base de datos. Revisa tu conexión a internet.</p>`;
+                }
+            }
+        }
+
+        /**
+         * Renderiza la lista de puentes filtrada
+         */
+        function renderBridges() {
+            const query = searchInput.value.trim().toLowerCase();
+            const normalizedQuery = normalizeBridgeName(query);
+
+            totalCountEl.textContent = allBridges.length;
+
+            const filtered = allBridges.filter(b => {
+                if (!query) return true;
+                const matchName = b.bridgeName.toLowerCase().includes(query) || 
+                                  (normalizedQuery && (b.normalizedName || '').includes(normalizedQuery));
+                const matchStudent = b.studentName.toLowerCase().includes(query);
+                const matchLoc = b.location.toLowerCase().includes(query);
+                return matchName || matchStudent || matchLoc;
+            });
+
+            if (query) {
+                filterStatusEl.textContent = `${filtered.length} resultado(s) para "${searchInput.value}"`;
+                clearSearchBtn.classList.remove('hidden');
+            } else {
+                filterStatusEl.textContent = `Mostrando todos (${allBridges.length})`;
+                clearSearchBtn.classList.add('hidden');
+            }
+
+            loadingStateEl.classList.add('hidden');
+
+            if (filtered.length === 0) {
+                bridgesListEl.innerHTML = '';
+                emptyStateEl.classList.remove('hidden');
+                if (query) {
+                    emptyTitleEl.textContent = '¡Ese puente parece estar libre!';
+                    emptySubtitleEl.textContent = `No encontramos ningún registro con "${searchInput.value}". ¡Apresúrate a apartarlo!`;
+                } else {
+                    emptyTitleEl.textContent = 'Aún no hay puentes registrados';
+                    emptySubtitleEl.textContent = '¡Sé el primero en apartar tu puente usando el formulario!';
+                }
+                return;
+            }
+
+            emptyStateEl.classList.add('hidden');
+
+            bridgesListEl.innerHTML = filtered.map(bridge => {
+                const isOwner = bridge.uid === currentUserId;
+                return `
+                    <article class="card-enter bg-white rounded-2xl p-4 sm:p-5 border ${isOwner ? 'border-indigo-300 ring-1 ring-indigo-100' : 'border-slate-200/90'} shadow-sm hover:shadow-md transition-all">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-xl ${isOwner ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-indigo-600'} flex items-center justify-center shrink-0 mt-0.5">
+                                    <i class="ph-bold ph-bridge text-xl"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h3 class="text-base sm:text-lg font-extrabold text-slate-800 break-words leading-snug">
+                                            ${escapeHTML(bridge.bridgeName)}
+                                        </h3>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
+                                            <i class="ph-fill ph-lock-simple"></i> Apartado
+                                        </span>
+                                        ${isOwner ? `
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700">
+                                                Tu registro
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                    
+                                    <!-- Ubicación -->
+                                    <p class="text-xs sm:text-sm text-slate-600 mt-1.5 flex items-start gap-1.5">
+                                        <i class="ph-fill ph-map-pin text-rose-500 text-base shrink-0 mt-0.5"></i>
+                                        <span>${formatLocationHTML(bridge.location)}</span>
+                                    </p>
+
+                                    <!-- Estudiante y Hora -->
+                                    <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                                        <span class="font-semibold text-slate-700 flex items-center gap-1.5">
+                                            <i class="ph-duotone ph-student text-indigo-500 text-base"></i>
+                                            ${escapeHTML(bridge.studentName)}
+                                        </span>
+                                        <span class="flex items-center gap-1 text-slate-400">
+                                            <i class="ph ph-clock"></i>
+                                            ${formatTime(bridge.createdAt)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botón Eliminar (Solo visible para quien lo registró desde este dispositivo) -->
+                            ${isOwner ? `
+                                <button 
+                                    type="button"
+                                    data-delete-id="${bridge.id}"
+                                    data-bridge-name="${escapeHTML(bridge.bridgeName)}"
+                                    title="Eliminar mi registro"
+                                    class="delete-trigger p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+                                >
+                                    <i class="ph-bold ph-trash text-lg"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            // Asignar eventos a botones de eliminar
+            document.querySelectorAll('.delete-trigger').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    bridgeIdToDelete = btn.getAttribute('data-delete-id');
+                    modalBridgeName.textContent = `"${btn.getAttribute('data-bridge-name')}"`;
+                    deleteModal.classList.remove('hidden');
+                });
+            });
+        }
+
+        /**
+         * Muestra error llamativo en el formulario
+         */
+        function showDuplicateError(existingBridge) {
+            successAlert.classList.add('hidden');
+            errorMessage.innerHTML = `El puente <strong>"${escapeHTML(existingBridge.bridgeName)}"</strong> ya fue registrado por <strong>${escapeHTML(existingBridge.studentName)}</strong> (${escapeHTML(existingBridge.location)}).`;
+            errorAlert.classList.remove('hidden');
+            
+            errorAlert.classList.remove('animate-shake');
+            void errorAlert.offsetWidth;
+            errorAlert.classList.add('animate-shake');
+        }
+
+        /**
+         * Actualiza el indicador en vivo bajo el campo del nombre del puente
+         */
+        function updateLiveHint() {
+            const val = bridgeInput.value.trim();
+            if (!val) {
+                liveCheckHint.innerHTML = `<i class="ph ph-shield-check"></i> Verificación automática anti-duplicados activa`;
+                liveCheckHint.className = 'text-[11px] mt-1.5 text-slate-400 flex items-center gap-1';
+                return;
+            }
+
+            const duplicate = findDuplicateBridge(val);
+            if (duplicate) {
+                liveCheckHint.innerHTML = `<i class="ph-bold ph-warning-circle"></i> ¡Cuidado! Parece igual a "${escapeHTML(duplicate.bridgeName)}" (de ${escapeHTML(duplicate.studentName)})`;
+                liveCheckHint.className = 'text-[11px] mt-1.5 text-rose-600 font-semibold flex items-center gap-1';
+            } else {
+                liveCheckHint.innerHTML = `<i class="ph-bold ph-check-circle"></i> ¡Disponible! Nadie ha registrado este puente aún.`;
+                liveCheckHint.className = 'text-[11px] mt-1.5 text-emerald-600 font-semibold flex items-center gap-1';
+            }
+        }
+
+        bridgeInput.addEventListener('input', () => {
+            errorAlert.classList.add('hidden');
+            updateLiveHint();
         });
-        if (!res.ok) throw new Error();
-        form.reset();
-        showAlert(`✅ ¡Listo! Apartaste "${bridge}" a nombre de ${student}.`, false);
-        await fetchBridges();
-      } catch {
-        showAlert("❌ No se pudo guardar. Revisa tu conexión.");
-      }
 
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Apartar Puente";
-    });
+        // Envío del formulario
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    async function deleteBridge(id, studentName) {
-      if (!confirm(`¿Seguro que quieres eliminar el registro de ${studentName}?`)) return;
-      await fetch(`${DB_URL}/puentes/${id}.json`, { method: 'DELETE' });
-      await fetchBridges();
-    }
+            const studentName = studentInput.value.trim();
+            const bridgeName = bridgeInput.value.trim();
+            const location = locationInput.value.trim();
 
-    searchInput.addEventListener('input', renderList);
+            if (!studentName || !bridgeName || !location) return;
 
-    fetchBridges();
-    setInterval(fetchBridges, 5000);
-  </script>
+            submitBtn.disabled = true;
+            submitBtnText.textContent = 'Verificando...';
+            errorAlert.classList.add('hidden');
+
+            // Sincronizar al instante antes de guardar para evitar choques simultáneos
+            await syncBridges();
+
+            const duplicate = findDuplicateBridge(bridgeName);
+            if (duplicate) {
+                showDuplicateError(duplicate);
+                submitBtn.disabled = false;
+                submitBtnText.textContent = 'Apartar este Puente';
+                return;
+            }
+
+            submitBtnText.textContent = 'Guardando...';
+
+            try {
+                const res = await fetch(COLLECTION_PATH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentName,
+                        bridgeName,
+                        normalizedName: normalizeBridgeName(bridgeName),
+                        location,
+                        uid: currentUserId,
+                        createdAt: Date.now()
+                    })
+                });
+
+                if (!res.ok) throw new Error('No se pudo guardar');
+
+                bridgeInput.value = '';
+                locationInput.value = '';
+                updateLiveHint();
+
+                successAlert.classList.remove('hidden');
+                setTimeout(() => {
+                    successAlert.classList.add('hidden');
+                }, 4000);
+
+                await syncBridges();
+            } catch (err) {
+                console.error("Error al guardar puente:", err);
+                errorMessage.textContent = "Ocurrió un problema de conexión al guardar. Intenta de nuevo.";
+                errorAlert.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtnText.textContent = 'Apartar este Puente';
+            }
+        });
+
+        // Eventos del buscador
+        searchInput.addEventListener('input', renderBridges);
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            renderBridges();
+            searchInput.focus();
+        });
+
+        // Eventos del modal de eliminación
+        cancelDeleteBtn.addEventListener('click', () => {
+            bridgeIdToDelete = null;
+            deleteModal.classList.add('hidden');
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (!bridgeIdToDelete) return;
+            const id = bridgeIdToDelete;
+            bridgeIdToDelete = null;
+            deleteModal.classList.add('hidden');
+
+            try {
+                await fetch(`${DB_URL}/puentes_clase/${id}.json`, {
+                    method: 'DELETE'
+                });
+                await syncBridges();
+            } catch (err) {
+                console.error("Error al eliminar:", err);
+            }
+        });
+
+        // Iniciar sincronización en vivo y refrescar cada 4 segundos
+        syncBridges();
+        setInterval(syncBridges, 4000);
+    </script>
 </body>
 </html>
